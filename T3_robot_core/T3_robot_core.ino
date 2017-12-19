@@ -262,7 +262,7 @@ void loop()
   {
     getSensorData();
 //    Serial.print("diff millis is :");
-//    Serial.println((millis()-tTime[5]));
+////    Serial.println((millis()-tTime[5]));
 //    Serial.println(encoder[0]);
 //    Serial.println(encoder[1]);
 //    Serial.println("RPM_en : ");
@@ -541,11 +541,12 @@ bool updateOdometry(double diff_time)
   delta_theta = atan2f(imu.quat[1]*imu.quat[2] + imu.quat[0]*imu.quat[3],
                        0.5f - imu.quat[2]*imu.quat[2] - imu.quat[3]*imu.quat[3]) - last_theta;
   
-//  Serial.print("delta_s : ");
-//  Serial.println(delta_s);
+ // Serial.print("delta_s : ");
+ // Serial.println(delta_s);
 //  Serial.print("step_time :");
 //  Serial.println(step_time);
-
+  
+  step_time = 0.10;
 
   last_velocity_[LEFT]  = wheel_l / step_time;
   last_velocity_[RIGHT] = wheel_r / step_time;
@@ -558,12 +559,12 @@ bool updateOdometry(double diff_time)
   odom_pose[2] += delta_s * sin(odom_pose[3] + (delta_theta / 2.0));
   odom_pose[3] += delta_theta;
 
-  v = delta_s * 0.934217797 / step_time;//(delta_s * 0.934217797)/ step_time;//0.711292
+  v = delta_s * 1.224807 / step_time;//(delta_s * 0.934217797)/ step_time;//0.711292
   w = delta_theta / step_time;
 //  
-  Serial.println(delta_s);
-  Serial.println(step_time); 
-  Serial.println(v);
+//  Serial.println(delta_s);
+//  Serial.println(step_time); 
+//  Serial.println(v);
   // compute odometric instantaneouse velocity
   odom_vel[0] = v;
   odom_vel[1] = 0.0;
@@ -783,8 +784,8 @@ void controlMotorSpeed(int32_t left_present_RPM, int32_t right_present_RPM)
 //  Serial.println(lin_vel1);
 //  Serial.print("controlMotorSpeed lin_vel2:");
 //  Serial.println(lin_vel2);
-  wheel_speed_cmd[LEFT]  = goal_linear_velocity - (goal_angular_velocity * WHEEL_SEPARATION / 2);
-  wheel_speed_cmd[RIGHT] = goal_linear_velocity + (goal_angular_velocity * WHEEL_SEPARATION / 2);
+  wheel_speed_cmd[LEFT]  = goal_linear_velocity - (goal_angular_velocity * kT3_TRACK_SEPARATION / 2);
+  wheel_speed_cmd[RIGHT] = goal_linear_velocity + (goal_angular_velocity * kT3_TRACK_SEPARATION / 2);
 //    Serial.print("goal_linear_velocity:");
 //    Serial.println((uint32_t)goal_linear_velocity);
 //    Serial.print("goal_angular_velocity:");
@@ -818,6 +819,7 @@ void controlMotorSpeed(int32_t left_present_RPM, int32_t right_present_RPM)
 //    Serial.print("lin_vel2:");
 //    Serial.println(lin_vel2);
   dxl_comm_result = motor_driver.speedControl((int32_t)lin_vel1, (int32_t)lin_vel2, left_present_RPM, right_present_RPM);
+// dxl_comm_result = motor_driver.speedControl((int32_t)lin_vel2, 0, left_present_RPM, right_present_RPM);
   if (dxl_comm_result == false)
     return;
 }
