@@ -155,7 +155,7 @@ bool T3RobotMotorDriver::speedControl(int64_t left_wheel_val, int64_t right_whee
   
   if((0 == left_wheel_val)&&(0 == left_present_RPM)) tempVoltageLeft_ = 0;
   if((0 == right_wheel_val)&&(0 == right_present_RPM)) tempVoltageRight_ = 0;
-  Serial.println(deltaLeft);
+//  Serial.println(deltaLeft);
 //  Serial.print("left_wheel_val : ");
 //  Serial.println((int32_t)left_wheel_val);
 //  Serial.print("right_wheel_val : ");
