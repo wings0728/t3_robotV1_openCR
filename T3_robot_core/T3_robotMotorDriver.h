@@ -17,7 +17,18 @@
 //          = 4095 * Encoder * 1.5 / MaxEncoder
 //          = 3.07125 * Encoder  //MaxEncoder = 2000
 
-
+struct PID
+{
+  float Kp;
+  float Ki;
+  float Kd;
+  float error_0;//基波分量
+  float error_1;//一次谐波分量
+  float error_2;//二次谐波分量
+  long  Sum_error;
+  float OutputValue;//实际输出量
+  float OwenValue;//零误差时的标准输出量  
+};
 
 class T3RobotMotorDriver
 {
@@ -29,7 +40,8 @@ class T3RobotMotorDriver
 		bool setTorque(uint8_t id, bool onoff);
 //		bool readEncoder(int32_t &left_value, int32_t &right_value);
 		bool speedControl(int64_t left_wheel_val, int64_t right_wheel_val, int64_t left_present_RPM, int64_t right_present_RPM);
-
+    float PID_calculate(struct PID *Control, float CurrentValue_left);
+    
 	private:
 		uint8_t left_wheel_id_;
 		uint8_t right_wheel_id;
@@ -37,5 +49,9 @@ class T3RobotMotorDriver
 //		void setSpeedSlowChange(uint16_t leftSpeedDAC, uint16_t rightSpeedDAC);
 
 };
+
+    
+
+    
 
 #endif

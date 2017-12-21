@@ -31,9 +31,9 @@ ros::Publisher odom_pub("odom", &odom);
 sensor_msgs::JointState joint_states;
 ros::Publisher joint_states_pub("joint_states", &joint_states);
 
-//sensor_msgs::Imu sonar_msg;
-//ros::Publisher sonar_pub("sonar_msg", &sonar_msg);
-
+sensor_msgs::Imu sonar_msg;
+ros::Publisher sonar_pub("sonar_msg", &sonar_msg);
+/*
 sensor_msgs::Imu sonar_msg_front_1;
 ros::Publisher sonar_pub_front_1("sonar_msg_front_1", &sonar_msg_front_1);
 
@@ -69,7 +69,7 @@ ros::Publisher sonar_pub_back_3("sonar_msg_back_3", &sonar_msg_back_3);
 
 sensor_msgs::Imu sonar_msg_back_4;
 ros::Publisher sonar_pub_back_4("sonar_msg_back_4", &sonar_msg_back_4);
-
+*/
 /*******************************************************************************
 * Transform Broadcaster
 *******************************************************************************/
@@ -175,6 +175,8 @@ void setupNode()
   nh.advertise(cmd_vel_rc100_pub);
   nh.advertise(odom_pub);
   nh.advertise(joint_states_pub);
+  nh.advertise(sonar_pub);
+  /*
   nh.advertise(sonar_pub_front_1);
   nh.advertise(sonar_pub_front_2);
   nh.advertise(sonar_pub_front_3);
@@ -187,7 +189,7 @@ void setupNode()
   nh.advertise(sonar_pub_back_2);
   nh.advertise(sonar_pub_back_3);
   nh.advertise(sonar_pub_back_4);
-  
+  */
   tfbroadcaster.init(nh);
   goal_linear_velocity = 0;
   goal_angular_velocity = 0;
@@ -711,6 +713,22 @@ void getSensorData(void)
 
 void publishSonarMsg(void)
 {
+  sonar_msg.header.stamp    = nh.now();
+  sonar_msg.header.frame_id = "sonars";
+  sonar_msg.orientation_covariance[0] = (float)(sonarFront[0]);
+  sonar_msg.orientation_covariance[1] = (float)(sonarFront[1]);
+  sonar_msg.orientation_covariance[2] = (float)(sonarFront[2]);
+  sonar_msg.orientation_covariance[3] = (float)(sonarFront[3]);
+  sonar_msg.orientation_covariance[4] = (float)(sonarFront[4]);
+  sonar_msg.orientation_covariance[5] = (float)(sonarFront[5]);
+  sonar_msg.orientation_covariance[6] = (float)(sonarFront[6]);
+  sonar_msg.orientation_covariance[7] = (float)(sonarFront[7]);
+  sonar_msg.angular_velocity_covariance[0] = (float)(sonarBack[0]);
+  sonar_msg.angular_velocity_covariance[1] = (float)(sonarBack[1]);
+  sonar_msg.angular_velocity_covariance[2] = (float)(sonarBack[2]);
+  sonar_msg.angular_velocity_covariance[3] = (float)(sonarBack[3]);
+  sonar_pub.publish(&sonar_msg);
+  /*
   uint8_t idx_ = 0;
   sonar_msg_front_1.header.stamp    = nh.now();
   sonar_msg_front_1.header.frame_id = "sonar_F1";
@@ -765,6 +783,7 @@ void publishSonarMsg(void)
   sonar_pub_back_2.publish(&sonar_msg_back_2);
   sonar_pub_back_3.publish(&sonar_msg_back_3);
   sonar_pub_back_4.publish(&sonar_msg_back_4);
+  */
 }
 
 

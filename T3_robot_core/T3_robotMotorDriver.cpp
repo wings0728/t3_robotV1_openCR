@@ -33,8 +33,14 @@ enum kGLOBLE_MOVE_STA
 	kTURN_RIGHT
 };
 
+float MaxValue = 9;
+float MinValue = -9;
+float OutputValue;
+
 int32_t currentLeftRPM_ = 0;
 int32_t currentRightRPM_ = 0;
+
+int32_t span = 0;
 
 T3RobotMotorDriver::T3RobotMotorDriver()
 {
@@ -109,6 +115,7 @@ int64_t left_last_RPM = 0;
 int64_t right_last_RPM = 0;
 #define kStep_Num 0.1
 #define kDelta    20
+
 bool T3RobotMotorDriver::speedControl(int64_t left_wheel_val, int64_t right_wheel_val, int64_t left_present_RPM, int64_t right_present_RPM) //give in RPMencoder
 {
 	uint64_t idx_ = 0;
@@ -127,8 +134,12 @@ bool T3RobotMotorDriver::speedControl(int64_t left_wheel_val, int64_t right_whee
 //  {
 //    delta += 100;
 //  }
-  
-
+/*
+  span = 1 * (abs(right_present_RPM) - abs(left_present_RPM));
+  pulse += PID_calculate(&Control_right,hRot_Speed2);
+  if(pulse > 4095) pulse = 4095;
+  if(pulse < 0) pulse = 0;
+*/
   if((left_wheel_val > 0)&&(0 == left_present_RPM)) 
   {
     deltaLeft += kDelta;
@@ -321,4 +332,38 @@ void T3RobotMotorDriver::setWheelDirection(int leftWheel, int rightWheel)
 //      Serial.println("4 - 3");
 //      Serial.println("right back");
     }
+}
+
+
+float T3RobotMotorDriver::PID_calculate(struct PID *Control, float CurrentValue_left)
+{
+  
+  float Value_Kp;//比例分量
+  float Value_Ki;//积分分量
+  float Value_Kd;//微分分量
+  
+  Control->error_0 = Control->OwenValue - CurrentValue_left + 0*span;//基波分量，Control->OwenValue为想要的速度，CurrentValue_left为电机真实速度
+  Value_Kp = Control->Kp * Control->error_0 ;
+  Control->Sum_error += Control->error_0;     
+  
+    /***********************积分饱和抑制********************************************/
+    OutputValue = Control->OutputValue;
+    if(OutputValue>5 || OutputValue<-5) 
+    {
+        Control->Ki = 0; 
+    }
+    /*******************************************************************/
+  
+  Value_Ki = Control->Ki * Control->Sum_error;
+  Value_Kd = Control->Kd * ( Control->error_0 - Control->error_1);
+  Control->error_1 = Control->error_0;//保存一次谐波
+  Control->OutputValue = Value_Kp  + Value_Ki + Value_Kd;//输出值计算，注意加减
+  
+    //限幅
+  if( Control->OutputValue > MaxValue)
+    Control->OutputValue = MaxValue;
+  if (Control->OutputValue < MinValue)
+    Control->OutputValue = MinValue;
+    
+  return (Control->OutputValue) ;
 }
