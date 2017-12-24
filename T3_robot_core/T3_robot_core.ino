@@ -351,9 +351,9 @@ void publishImuMsg(void)
   imu_msg.header.stamp    = nh.now();
   imu_msg.header.frame_id = "imu_link";
 
-  imu_msg.angular_velocity.x = imu.gx;
-  imu_msg.angular_velocity.y = imu.gy;
-  imu_msg.angular_velocity.z = imu.gz;
+  imu_msg.angular_velocity.x = 0;//imu.gx;
+  imu_msg.angular_velocity.y = 0;//imu.gy;
+  imu_msg.angular_velocity.z = 0;//imu.gz;
   imu_msg.angular_velocity_covariance[0] = 0.02;
   imu_msg.angular_velocity_covariance[1] = 0;
   imu_msg.angular_velocity_covariance[2] = 0;
@@ -561,7 +561,7 @@ bool updateOdometry(double diff_time)
   odom_pose[2] += delta_s * sin(odom_pose[3] + (delta_theta / 2.0));
   odom_pose[3] += delta_theta;
 
-  v = delta_s * 1.224807 / step_time;//(delta_s * 0.934217797)/ step_time;//0.711292
+  v = delta_s * 0.95939 / step_time;//0.91091//0.913706//1.224807 //(delta_s * 0.934217797)/ step_time;//0.711292
   w = delta_theta / step_time;
 //  
 //  Serial.println(delta_s);
@@ -572,14 +572,14 @@ bool updateOdometry(double diff_time)
   odom_vel[1] = 0.0;
   odom_vel[2] = w;
 
-  odom.pose.pose.position.x = odom_pose[1];
-  odom.pose.pose.position.y = odom_pose[2];
+  odom.pose.pose.position.x = 0;//odom_pose[1];
+  odom.pose.pose.position.y = 0;//odom_pose[2];
   odom.pose.pose.position.z = 0;
   odom.pose.pose.orientation = tf::createQuaternionFromYaw(odom_pose[3]);
 
   // We should update the twist of the odometry
-  odom.twist.twist.linear.x  = odom_vel[0];
-  odom.twist.twist.angular.z = odom_vel[2];
+  odom.twist.twist.linear.x  = odom_vel[0];//goal_linear_velocity * 0.8344;//0.8227;//
+  odom.twist.twist.angular.z = odom_vel[2];//goal_angular_velocity;//
 
   last_theta = atan2f(imu.quat[1]*imu.quat[2] + imu.quat[0]*imu.quat[3],
                       0.5f - imu.quat[2]*imu.quat[2] - imu.quat[3]*imu.quat[3]);
