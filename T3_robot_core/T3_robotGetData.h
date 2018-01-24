@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include "T3_softI2CAddress.h"
 
-#define kMAX_RPM    3000
+#define kMAX_RPM    3120//3000
 class GetData
 {
 	public:
@@ -11,9 +11,9 @@ class GetData
 		~ GetData();
 
 		void init(void);
-		bool readEncoder(int32_t *encoder);
+		bool readEncoder(int32_t (&encoder)[4]);
 		bool readInfrared(uint8_t *infraredValue);
-		bool readSonar(uint8_t *reverse0Value, uint8_t *reverse1Value);
+		unsigned char readSonar(uint8_t *reverse0Value, uint8_t *reverse1Value);
 
 };
 #endif

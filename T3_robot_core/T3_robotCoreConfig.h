@@ -33,27 +33,30 @@
 #define kGET_DATA_PERIOD				    10  //hz
 
 #define kT3_DRIVER_WHEEL_CIRCUMFERENCE 0.52150438//0.38936  //meter
-#define kT3_VELOCITY_CONSTANT_VALUE   1540.990343127//6163.9613725109
-//kT3_VELOCITY_CONSTANT_VALUE = kT3_REDUCION_GEARBOX * 60 / kT3_DRIVER_WHEEL_CIRCUMFERENCE
+#define kT3_VELOCITY_CONSTANT_VALUE   2405.682513328//2301.035323999(0.5215, no 0.9565)//1540.990343127(0.3896, no 0.9565)//6163.9613725109
+//kT3_VELOCITY_CONSTANT_VALUE = kT3_REDUCION_GEARBOX * 60 / 0.9565 / kT3_DRIVER_WHEEL_CIRCUMFERENCE 
 // V = (RPMdriver * kT3_DRIVER_WHEEL_CIRCUMFERENCE / 60 )(m/s)
-//     = ((RPMmotor / kT3_REDUCION_GEARBOX ) * kT3_DRIVER_WHEEL_CIRCUMFERENCE / 60 )(m/s)
-//     = ((RPMencoder / 4 /  kT3_REDUCION_GEARBOX ) * kT3_DRIVER_WHEEL_CIRCUMFERENCE / 60 )(m/s)
-
-#define kT3_REDUCION_GEARBOX				10 //gear
-#define kT3_TRACK_SEPARATION                      0.618//meter
+//     = ((RPMmotor / kT3_REDUCION_GEARBOX ) * 0.9565 * kT3_DRIVER_WHEEL_CIRCUMFERENCE / 60 )(m/s)
+//     = ((RPMencoder / 4 /  kT3_REDUCION_GEARBOX ) * 0.9565 * kT3_DRIVER_WHEEL_CIRCUMFERENCE / 60 )(m/s)
+// 0.9565 is the gearbox loss
+#define kT3_REDUCION_GEARBOX				20//10 //gear
+#define kT3_TRACK_SEPARATION                      0.843//0.618//meter
 #define kT3_TURNING_RADIUS			   0.309//meter
 #define kT3_ROBOT_RADIUS                         0.55322//meter
-#define kT3_MAX_LINEAR_VELOCITY              1.9468// m/s
-#define kT3_MAX_ANGULAR_VELOCITY          6.3003// rad/s
+#define kT3_MAX_LINEAR_VELOCITY              0.9734//1.9468// m/s
+#define kT3_MAX_ANGULAR_VELOCITY             6.3003// rad/s
 #define kT3_VELOCITY_STEP                          0.01   // m/s
 #define kT3_VELOCITY_LINEAR_X                   0.01   // m/s
 #define kT3_VELOCITY_ANGULAR_Z                  0.1    // rad/s
 #define kT3_SCALE_VELOCITY_LINEAR_X              1
 #define kT3_SCALE_VELOCITY_ANGULAR_Z          1
-#define kT3_TICK2RAD                        0.001273705//0.000735736 
+#define kT3_TICK2RAD                        0.000751218//0.000785398//0.001273705//0.000735736 
 // 0.087890625[deg] * 3.14159265359 / 180 = 0.001533981f
 //0.087890625 = 360 / 4096
-#define kT3_WHEEL_RADIUS                    0.083// 0.062 +0.021           // meter
+
+//8364
+
+#define kT3_WHEEL_RADIUS                    0.0699//0.0653//0.0683//0.083// 0.062 +0.021           // meter
 
 #define WHEEL_RADIUS                     0.033           // meter
 #define WHEEL_SEPARATION                 0.160           // meter (BURGER : 0.160, WAFFLE : 0.287)
@@ -104,8 +107,11 @@ void updateJoint(void);
 void updateTF(geometry_msgs::TransformStamped& odom_tf);
 void receiveRemoteControlData(void);
 //void controlMotorSpeed(void);
-
-void controlMotorSpeed(int32_t left_present_RPM, int32_t right_present_RPM);
+bool getSensorData(void);
+//void getSensorData(void);
+//void controlMotorSpeed(int32_t left_present_RPM, int32_t right_present_RPM);
+//void controlMotorSpeed(bool onOff, int32_t left_present_RPM, int32_t right_present_RPM);
+void controlMotorSpeed(bool onOff, int32_t left_present_RPM, int32_t right_present_RPM, int32_t *lin_Value);
 uint8_t getButtonPress(void);
 void testDrive(void);
 void checkPushButtonState(void);
