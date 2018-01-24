@@ -142,7 +142,6 @@ int64_t right_last_RPM = 0;
 #define kDelta    20
 
 bool T3RobotMotorDriver::speedControl(int64_t left_wheel_val, int64_t right_wheel_val, int64_t left_present_RPM, int64_t right_present_RPM, int32_t *dacValue) //give in RPMencoder
-{
 //bool T3RobotMotorDriver::speedControl(int64_t left_wheel_val, int64_t right_wheel_val, int64_t left_present_RPM, int64_t right_present_RPM) //give in RPMencoder
 //{
 	uint64_t idx_ = 0;
@@ -161,7 +160,6 @@ bool T3RobotMotorDriver::speedControl(int64_t left_wheel_val, int64_t right_whee
 //  {
 //    delta += 100;
 //  }
-
   brakeLedCtrl(left_wheel_val, right_wheel_val);
 
 /*
@@ -200,21 +198,8 @@ bool T3RobotMotorDriver::speedControl(int64_t left_wheel_val, int64_t right_whee
   if((0 == left_wheel_val)&&(0 == left_present_RPM)) tempVoltageLeft_ = 0;
   if((0 == right_wheel_val)&&(0 == right_present_RPM)) tempVoltageRight_ = 0;
 //  Serial.println(deltaLeft);
-/*
-  Serial.print("left_wheel_val : ");
-  Serial.println((int32_t)left_wheel_val);
-  Serial.print("right_wheel_val : ");
-  Serial.println((int32_t)right_wheel_val);
-  Serial.print("left_present_RPM : ");
-  Serial.println((int32_t)left_present_RPM);
-  Serial.print("right_present_RPM : ");
-  Serial.println((int32_t)right_present_RPM);
-  Serial.print("tempVoltageLeft_ : ");
-  Serial.println((int32_t)tempVoltageLeft_);
-  Serial.print("tempVoltageRight_ : ");
-  Serial.println((int32_t)tempVoltageRight_);
 // 
-*/
+
   vol_num_left = abs(left_present_RPM - left_wheel_val)*kStep_Num;
   vol_num_right = abs(right_present_RPM - right_wheel_val)*kStep_Num;
   if(vol_num_left > 500) vol_num_left = 500;

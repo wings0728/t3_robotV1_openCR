@@ -125,10 +125,6 @@ static uint8_t battery_voltage = 0;
 static float   battery_valtage_raw = 0;
 static uint8_t battery_state   = BATTERY_POWER_OFF;
 
-
-
-
-
 /*******************************************************************************
 * Setup function
 *******************************************************************************/
@@ -709,6 +705,7 @@ void publishSonarMsg(void)
 {
   sonar_msg.header.stamp    = nh.now();
   sonar_msg.header.frame_id = "sonars";
+
   sonar_msg.orientation_covariance[0] = (float)(dacValue[0]);//adc_left//(float)(sonarFront[0]);
   sonar_msg.orientation_covariance[1] = (float)(dacValue[1]);//adc_right//(float)(sonarFront[1]);
   sonar_msg.orientation_covariance[2] = (float)(linValue[0]);//cmd_rpm_left//(float)(sonarFront[2]);
@@ -722,6 +719,7 @@ void publishSonarMsg(void)
   sonar_msg.angular_velocity_covariance[2] = (float)(sonarBack[2]);
   sonar_msg.angular_velocity_covariance[3] = (float)(sonarBack[3]);
   sonar_pub.publish(&sonar_msg);
+
 }
 
 
@@ -748,6 +746,7 @@ void controlMotorSpeed(bool onOff, int32_t left_present_RPM, int32_t right_prese
   {
     wheel_speed_cmd[LEFT]  = goal_linear_velocity - (goal_angular_velocity * kT3_TRACK_SEPARATION / 2);
     wheel_speed_cmd[RIGHT] = goal_linear_velocity + (goal_angular_velocity * kT3_TRACK_SEPARATION / 2);
+
 //    Serial.print("goal_linear_velocity:");
 //    Serial.println((uint32_t)goal_linear_velocity);
 //    Serial.print("goal_angular_velocity:");
@@ -782,6 +781,7 @@ void controlMotorSpeed(bool onOff, int32_t left_present_RPM, int32_t right_prese
 //
 //    Serial.print("lin_vel2:");
 //    Serial.println(lin_vel2);
+
     dxl_comm_result = motor_driver.speedControl((int32_t)lin_vel1, (int32_t)lin_vel2, left_present_RPM, right_present_RPM, dacValue);
 //  dxl_comm_result = motor_driver.speedControl((int32_t)lin_vel1, (int32_t)lin_vel2, left_present_RPM, right_present_RPM);
 // dxl_comm_result = motor_driver.speedControl((int32_t)lin_vel2, 0, left_present_RPM, right_present_RPM);
