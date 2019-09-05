@@ -2,7 +2,7 @@
 #define _T3_ROBOT_MOTOR_DRIVER_H_
 #include "T3_softI2C.h"
 #include <stdint.h>
-#define kLIMIT_X_MAX_VELOCITY	3000  //ours?
+#define kLIMIT_X_MAX_VELOCITY	3120//3000  //ours?
 #define kMOTOR_LEFT_ID                      1       // ID of left motor
 #define kMOTOR_RIGHT_ID                    2       // ID of right motor
 
@@ -36,10 +36,13 @@ class T3RobotMotorDriver
 		T3RobotMotorDriver();
 		~T3RobotMotorDriver();
 		void init(void);
+    void brakeLedInit(void);
+    void brakeLedCtrl(int64_t left_wheel_val, int64_t right_wheel_val);
 		void closeMotor(void);
 		bool setTorque(uint8_t id, bool onoff);
 //		bool readEncoder(int32_t &left_value, int32_t &right_value);
-		bool speedControl(int64_t left_wheel_val, int64_t right_wheel_val, int64_t left_present_RPM, int64_t right_present_RPM);
+//		bool speedControl(int64_t left_wheel_val, int64_t right_wheel_val, int64_t left_present_RPM, int64_t right_present_RPM);
+    bool speedControl(int64_t left_wheel_val, int64_t right_wheel_val, int64_t left_present_RPM, int64_t right_present_RPM, int32_t *dacValue);
     float PID_calculate(struct PID *Control, float CurrentValue_left);
     
 	private:

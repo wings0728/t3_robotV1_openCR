@@ -227,9 +227,13 @@ int8_t myI2Cdev::masterRead(uint16_t devAddr, uint8_t length, uint8_t *data, uin
   HAL_StatusTypeDef ret;
 
   ret = HAL_I2C_Master_Receive(&I2cHandle, devAddr, data, length, 0x05);// 最低位（0为准备传输，1为准备接收）
+  
+//  Serial.print(data[0]);
+//  Serial.print(" | ");
+  
   #ifdef I2CDEV_SERIAL_DEBUG
-    Serial.println("\r\n ret is :");
-    Serial.println(ret);
+//    Serial.println("\r\n ret is :");
+//    Serial.println(ret);
   #endif
   if( ret == HAL_OK )
   {

@@ -19,10 +19,11 @@ void GetData::init(void)
 	  T3HardwareI2Cdev.begin(100);
 }
 
-bool GetData::readEncoder(int32_t *encoder)
+bool GetData::readEncoder(int32_t (&encoder)[4])
 {
   bool getEncoderDataResult_ = false;
-
+  
+  uint8_t idx_ = 0;
 	uint8_t getEncoderDataRet_ = 0;
 	uint8_t wheelDirection_ = 0;
 	uint16_t leftEncoder_ = 0;
@@ -32,10 +33,13 @@ bool GetData::readEncoder(int32_t *encoder)
 	uint8_t encoderData_[kI2C_ENCODER_DATA_LENGTH] = {0};
 
 	getEncoderDataRet_ = T3HardwareI2Cdev.masterRead(kI2C_ENCODER_SLAVE_ADDR, kI2C_ENCODER_DATA_LENGTH, encoderData_); // get the response length.
+/*  Serial.print("EncoderData is :");
+  Serial.println(getEncoderDataRet_);
+*/
 	if(kI2C_ENCODER_DATA_LENGTH == getEncoderDataRet_)
 	{
-		leftEncoder_ = ((encoderData_[0] << 8) | encoderData_[1] );
-		rightEncoder_ = ((encoderData_[2] << 8) | encoderData_[3] );
+		leftEncoder_ = ((encoderData_[0] << 8) | encoderData_[1]);
+		rightEncoder_ = ((encoderData_[2] << 8) | encoderData_[3]);
 		leftRPM_ = ((encoderData_[5] << 8) | encoderData_[6] ) / 4;
 		rightRPM_ = ((encoderData_[7] << 8) | encoderData_[8] ) / 4;
     
@@ -68,11 +72,23 @@ bool GetData::readEncoder(int32_t *encoder)
 			encoder[1] = (int16_t)(rightEncoder_);
 			encoder[3] = (int16_t)(rightRPM_);
 		}
+   Serial.print(leftEncoder_);
+   Serial.print(" | ");
+   Serial.print(rightEncoder_);
+   Serial.print(" | ");
+   Serial.print(leftRPM_);
+   Serial.print(" | ");
+   Serial.println(rightRPM_);
 		getEncoderDataResult_ = true;
+//    Serial.println("encoder right!");
 		return true;
 	}
 	else
 	{
+    for(idx_ = 0; idx_ < 4; idx_ ++)
+    {
+      encoder[idx_] = 0;
+    }
 		return false;
 	}
 }
@@ -99,10 +115,13 @@ bool GetData::readInfrared(uint8_t *infraredValue)
 	}
 }
 
-bool GetData::readSonar(uint8_t *reverse0Value, uint8_t *reverse1Value)
+unsigned char GetData::readSonar(uint8_t *reverse0Value, uint8_t *reverse1Value)
 {
 	bool getReverse0DataResult_ = false;
 	bool getReverse1DataResult_ = false;
+  uint8_t sta_0_ = 0;
+  uint8_t sta_1_ = 0;
+  uint8_t sta_ = 0;
   uint8_t idx_ = 0;
 	uint8_t getReverse0DataRet_ = 0;
 	uint8_t getReverse1DataRet_ = 0;
@@ -128,17 +147,24 @@ bool GetData::readSonar(uint8_t *reverse0Value, uint8_t *reverse1Value)
     }
 		getReverse1DataResult_ = true;
 	}
-//  Serial.print("getReverse0DataResult_ : ");
-//  Serial.println(getReverse0DataResult_);
-//  Serial.print("getReverse1DataResult_ : ");
-//  Serial.println(getReverse1DataResult_);
-	if((getReverse0DataResult_) && (getReverse1DataResult_))
+  Serial.print("getReverse0DataResult_ : ");
+  Serial.println(getReverse0DataResult_);
+  Serial.print("getReverse1DataResult_ : ");
+  Serial.println(getReverse1DataResult_);
+	if(getReverse0DataResult_)
 	{
-		return true;
+		sta_0_ = 1;
 	}
-	else
+	else if(getReverse1DataResult_)
 	{
-		return false;
+		sta_1_ = 1;
 	}
+
+  if(sta_1_ && sta_0_)
+  { 
+    sta_ = 1;
+  }
+
+  return sta_;
 }
 

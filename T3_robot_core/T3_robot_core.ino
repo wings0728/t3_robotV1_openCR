@@ -33,43 +33,7 @@ ros::Publisher joint_states_pub("joint_states", &joint_states);
 
 sensor_msgs::Imu sonar_msg;
 ros::Publisher sonar_pub("sonar_msg", &sonar_msg);
-/*
-sensor_msgs::Imu sonar_msg_front_1;
-ros::Publisher sonar_pub_front_1("sonar_msg_front_1", &sonar_msg_front_1);
 
-sensor_msgs::Imu sonar_msg_front_2;
-ros::Publisher sonar_pub_front_2("sonar_msg_front_2", &sonar_msg_front_2);
-
-sensor_msgs::Imu sonar_msg_front_3;
-ros::Publisher sonar_pub_front_3("sonar_msg_front_3", &sonar_msg_front_3);
-
-sensor_msgs::Imu sonar_msg_front_4;
-ros::Publisher sonar_pub_front_4("sonar_msg_front_4", &sonar_msg_front_4);
-
-sensor_msgs::Imu sonar_msg_front_5;
-ros::Publisher sonar_pub_front_5("sonar_msg_front_5", &sonar_msg_front_5);
-
-sensor_msgs::Imu sonar_msg_front_6;
-ros::Publisher sonar_pub_front_6("sonar_msg_front_6", &sonar_msg_front_6);
-
-sensor_msgs::Imu sonar_msg_front_7;
-ros::Publisher sonar_pub_front_7("sonar_msg_front_7", &sonar_msg_front_7);
-
-sensor_msgs::Imu sonar_msg_front_8;
-ros::Publisher sonar_pub_front_8("sonar_msg_front_8", &sonar_msg_front_8);
-
-sensor_msgs::Imu sonar_msg_back_1;
-ros::Publisher sonar_pub_back_1("sonar_msg_back_1", &sonar_msg_back_1);
-
-sensor_msgs::Imu sonar_msg_back_2;
-ros::Publisher sonar_pub_back_2("sonar_msg_back_2", &sonar_msg_back_2);
-
-sensor_msgs::Imu sonar_msg_back_3;
-ros::Publisher sonar_pub_back_3("sonar_msg_back_3", &sonar_msg_back_3);
-
-sensor_msgs::Imu sonar_msg_back_4;
-ros::Publisher sonar_pub_back_4("sonar_msg_back_4", &sonar_msg_back_4);
-*/
 /*******************************************************************************
 * Transform Broadcaster
 *******************************************************************************/
@@ -91,6 +55,9 @@ GetData			 get_data;
 
 int32_t globleLeftEncoder = 0;
 int32_t globleREncoder = 0;
+bool dataI2CStatus = false;
+int32_t dacValue[4] = {0};
+int32_t linValue[2] = {0};
 
 int32_t encoder[kI2C_ENCODER_FACT_LENGTH] = {0};
 uint8_t infrared[kI2C_DISTANCE_DATA_LENGTH] = {0};
@@ -158,10 +125,6 @@ static uint8_t battery_voltage = 0;
 static float   battery_valtage_raw = 0;
 static uint8_t battery_state   = BATTERY_POWER_OFF;
 
-
-
-
-
 /*******************************************************************************
 * Setup function
 *******************************************************************************/
@@ -193,7 +156,7 @@ void setupNode()
   tfbroadcaster.init(nh);
   goal_linear_velocity = 0;
   goal_angular_velocity = 0;
-  nh.loginfo("Connected to OpenCR board!");
+  nh.loginfo("Connected to T3.OpenCR board!");
 }
 
 void setup()
@@ -260,9 +223,9 @@ void loop()
 //  Serial.println(globleREncoder);
 //  Serial.println("***************");
 
-   if ((millis()-tTime[5]) >= (1000 / kGET_DATA_PERIOD))
+   if ((millis()-tTime[4]) >= (1000 / kGET_DATA_PERIOD))
   {
-    getSensorData();
+    dataI2CStatus = getSensorData();
 //    Serial.print("diff millis is :");
 ////    Serial.println((millis()-tTime[5]));
 //    Serial.println(encoder[0]);
@@ -270,7 +233,7 @@ void loop()
 //    Serial.println("RPM_en : ");
 //    Serial.println(encoder[2]);
 //    Serial.println(encoder[3]);
-    tTime[5] = millis();
+    tTime[4] = millis();
   }
 
 //  motor_driver.speedControl(1400, -3000, 0, 0);
@@ -282,7 +245,8 @@ void loop()
 //  Serial.println(tTime[0]);
   if ((millis()-tTime[0]) >= (1000 / CONTROL_MOTOR_SPEED_PERIOD))
   {
-    controlMotorSpeed(encoder[2], encoder[3]);
+    controlMotorSpeed(dataI2CStatus, encoder[2], encoder[3], linValue);
+//    controlMotorSpeed(encoder[2], encoder[3]);
     tTime[0] = millis();
   }
 
@@ -675,15 +639,15 @@ void receiveRemoteControlData(void)
 /*******************************************************************************
 * T3 Get Sensor Data
 *******************************************************************************/
-void getSensorData(void)
+bool getSensorData(void)
 {
-	uint8_t encoder_state_ = 0;
-	uint8_t infrared_state_ = 0;
-	uint8_t sonar_state_ = 0;
+	bool encoder_state_ = false;
+//	uint8_t infrared_state_ = 0;
+//	uint8_t sonar_state_ = 0;
 
 	encoder_state_ = get_data.readEncoder(encoder);
-//  Serial.print("EncoderState :");
-//  Serial.println(encoder_state_);
+ // Serial.print("EncoderState :");
+ // Serial.println(encoder_state_);
   if(encoder_state_)
   {
     globleLeftEncoder += encoder[0];
@@ -706,84 +670,56 @@ void getSensorData(void)
 //  Serial.print("globleREncoder :");
 //  Serial.println(globleREncoder);
 //	infrared_state_ = get_data.readInfrared(infrared);
-	sonar_state_ = get_data.readSonar(sonarFront, sonarBack);
+
+//	sonar_state_ = get_data.readSonar(sonarFront, sonarBack);
+ 
+//  if(!sonar_state_)
+//  {
+//    for(unsigned int idx_ = 0; idx_ < 8; idx_ ++)
+//    {
+//      sonarFront[idx_] = 15;
+//    }
+//    for(unsigned int idx_ = 0; idx_ < 4; idx_ ++)
+//    {
+//      sonarBack[idx_] = 15;
+//    }
+//  }
+//   for(unsigned int idx_ = 0; idx_ < 8; idx_ ++)
+//  {
+//    Serial.print("Sonar is :");
+//    Serial.println(sonarFront[idx_]);
+//  }
+//  Serial.println("************front_end************");
+//  for(unsigned int idx_ = 0; idx_ < 4; idx_ ++)
+//  {
+//    Serial.print("Sonar is :");
+//    Serial.println(sonarBack[idx_]);
+//  }
+//  Serial.println("************back_end************");
 //  Serial.print("sonar_sta : ");
 //  Serial.println(sonar_state_);
+  return encoder_state_;
 }
 
 void publishSonarMsg(void)
 {
   sonar_msg.header.stamp    = nh.now();
   sonar_msg.header.frame_id = "sonars";
-  sonar_msg.orientation_covariance[0] = (float)(sonarFront[0]);
-  sonar_msg.orientation_covariance[1] = (float)(sonarFront[1]);
-  sonar_msg.orientation_covariance[2] = (float)(sonarFront[2]);
-  sonar_msg.orientation_covariance[3] = (float)(sonarFront[3]);
-  sonar_msg.orientation_covariance[4] = (float)(sonarFront[4]);
-  sonar_msg.orientation_covariance[5] = (float)(sonarFront[5]);
+
+  sonar_msg.orientation_covariance[0] = (float)(dacValue[0]);//adc_left//(float)(sonarFront[0]);
+  sonar_msg.orientation_covariance[1] = (float)(dacValue[1]);//adc_right//(float)(sonarFront[1]);
+  sonar_msg.orientation_covariance[2] = (float)(linValue[0]);//cmd_rpm_left//(float)(sonarFront[2]);
+  sonar_msg.orientation_covariance[3] = (float)(linValue[1]);//cmd_rpm_right//(float)(sonarFront[3]);
+  sonar_msg.orientation_covariance[4] = (float)(encoder[2]);//encoder_rpm_left//(float)(sonarFront[5]);
+  sonar_msg.orientation_covariance[5] = (float)(encoder[3]);//encoder_rpm_right//(float)(sonarFront[4]);
   sonar_msg.orientation_covariance[6] = (float)(sonarFront[6]);
   sonar_msg.orientation_covariance[7] = (float)(sonarFront[7]);
-  sonar_msg.angular_velocity_covariance[0] = (float)(sonarBack[0]);
-  sonar_msg.angular_velocity_covariance[1] = (float)(sonarBack[1]);
+  sonar_msg.angular_velocity_covariance[0] = (float)(dacValue[2]);//delta_left//(float)(sonarBack[0]);
+  sonar_msg.angular_velocity_covariance[1] = (float)(dacValue[3]);//delta_right//(float)(sonarBack[1]);
   sonar_msg.angular_velocity_covariance[2] = (float)(sonarBack[2]);
   sonar_msg.angular_velocity_covariance[3] = (float)(sonarBack[3]);
   sonar_pub.publish(&sonar_msg);
-  /*
-  uint8_t idx_ = 0;
-  sonar_msg_front_1.header.stamp    = nh.now();
-  sonar_msg_front_1.header.frame_id = "sonar_F1";
-  sonar_msg_front_1.angular_velocity_covariance[0] = (float)(sonarFront[0]);
-  sonar_msg_front_2.header.stamp    = nh.now();
-  sonar_msg_front_2.header.frame_id = "sonar_F2";
-  sonar_msg_front_2.angular_velocity_covariance[1] = (float)(sonarFront[1]);
-  sonar_msg_front_3.header.stamp    = nh.now();
-  sonar_msg_front_3.header.frame_id = "sonar_F3";
-  sonar_msg_front_3.angular_velocity_covariance[2] = (float)(sonarFront[2]);
-  sonar_msg_front_4.header.stamp    = nh.now();
-  sonar_msg_front_4.header.frame_id = "sonar_F4";
-  sonar_msg_front_4.angular_velocity_covariance[3] = (float)(sonarFront[3]);
-  sonar_msg_front_5.header.stamp    = nh.now();
-  sonar_msg_front_5.header.frame_id = "sonar_F5";
-  sonar_msg_front_5.angular_velocity_covariance[4] = (float)(sonarFront[4]);
-  sonar_msg_front_6.header.stamp    = nh.now();
-  sonar_msg_front_6.header.frame_id = "sonar_F6";
-  sonar_msg_front_6.angular_velocity_covariance[5] = (float)(sonarFront[5]);
-  sonar_msg_front_7.header.stamp    = nh.now();
-  sonar_msg_front_7.header.frame_id = "sonar_F7";
-  sonar_msg_front_6.angular_velocity_covariance[6] = (float)(sonarFront[6]);
-  sonar_msg_front_8.header.stamp    = nh.now();
-  sonar_msg_front_8.header.frame_id = "sonar_F8";
-  sonar_msg_front_8.angular_velocity_covariance[7] = (float)(sonarFront[7]);
-  sonar_msg_back_1.header.stamp    = nh.now();
-  sonar_msg_back_1.header.frame_id = "sonar_B1";
-  sonar_msg_back_1.linear_acceleration_covariance[0] = (float)(sonarBack[0]);
-  sonar_msg_back_2.header.stamp    = nh.now();
-  sonar_msg_back_2.header.frame_id = "sonar_B2";
-  sonar_msg_back_2.linear_acceleration_covariance[1] = (float)(sonarBack[1]);
-  sonar_msg_back_3.header.stamp    = nh.now();
-  sonar_msg_back_3.header.frame_id = "sonar_B3";
-  sonar_msg_back_3.linear_acceleration_covariance[2] = (float)(sonarBack[2]);
-  sonar_msg_back_4.header.stamp    = nh.now();
-  sonar_msg_back_4.header.frame_id = "sonar_B4";
-  sonar_msg_back_4.linear_acceleration_covariance[3] = (float)(sonarBack[3]);
- //  for(idx_ = 0; idx_ < 8; idx_ ++)
-//  {
-//    Serial.println(sonarFront[idx_]);  
-//  }
-  
-  sonar_pub_front_1.publish(&sonar_msg_front_1);
-  sonar_pub_front_2.publish(&sonar_msg_front_2);
-  sonar_pub_front_3.publish(&sonar_msg_front_3);
-  sonar_pub_front_4.publish(&sonar_msg_front_4);
-  sonar_pub_front_5.publish(&sonar_msg_front_5);
-  sonar_pub_front_6.publish(&sonar_msg_front_6);
-  sonar_pub_front_7.publish(&sonar_msg_front_7);
-  sonar_pub_front_8.publish(&sonar_msg_front_8);
-  sonar_pub_back_1.publish(&sonar_msg_back_1);
-  sonar_pub_back_2.publish(&sonar_msg_back_2);
-  sonar_pub_back_3.publish(&sonar_msg_back_3);
-  sonar_pub_back_4.publish(&sonar_msg_back_4);
-  */
+
 }
 
 
@@ -791,7 +727,9 @@ void publishSonarMsg(void)
 /*******************************************************************************
 * Control motor speed
 *******************************************************************************/
-void controlMotorSpeed(int32_t left_present_RPM, int32_t right_present_RPM)
+//void controlMotorSpeed(int32_t left_present_RPM, int32_t right_present_RPM)
+//{
+void controlMotorSpeed(bool onOff, int32_t left_present_RPM, int32_t right_present_RPM, int32_t *lin_Value)
 {
   bool dxl_comm_result = false;
 
@@ -803,44 +741,64 @@ void controlMotorSpeed(int32_t left_present_RPM, int32_t right_present_RPM)
 //  Serial.println(lin_vel1);
 //  Serial.print("controlMotorSpeed lin_vel2:");
 //  Serial.println(lin_vel2);
-  wheel_speed_cmd[LEFT]  = goal_linear_velocity - (goal_angular_velocity * kT3_TRACK_SEPARATION / 2);
-  wheel_speed_cmd[RIGHT] = goal_linear_velocity + (goal_angular_velocity * kT3_TRACK_SEPARATION / 2);
+
+  if(onOff)
+  {
+    wheel_speed_cmd[LEFT]  = goal_linear_velocity - (goal_angular_velocity * kT3_TRACK_SEPARATION / 2);
+    wheel_speed_cmd[RIGHT] = goal_linear_velocity + (goal_angular_velocity * kT3_TRACK_SEPARATION / 2);
+
 //    Serial.print("goal_linear_velocity:");
 //    Serial.println((uint32_t)goal_linear_velocity);
 //    Serial.print("goal_angular_velocity:");
 //    Serial.println((uint32_t)goal_angular_velocity);
 
-  lin_vel1 = wheel_speed_cmd[LEFT] * kT3_VELOCITY_CONSTANT_VALUE;
+    lin_vel1 = wheel_speed_cmd[LEFT] * kT3_VELOCITY_CONSTANT_VALUE;
 //  Serial.print("wheel_speed_cmd[LEFT] lin_vel1:");
 //  Serial.println(lin_vel1);
-  if (lin_vel1 > kLIMIT_X_MAX_VELOCITY)
-  {
-    lin_vel1 =  kLIMIT_X_MAX_VELOCITY;
-  }
-  else if (lin_vel1 < -kLIMIT_X_MAX_VELOCITY)
-  {
-    lin_vel1 = -kLIMIT_X_MAX_VELOCITY;
-  }
+    if (lin_vel1 > kLIMIT_X_MAX_VELOCITY)
+    {
+      lin_vel1 =  kLIMIT_X_MAX_VELOCITY;
+    }
+    else if (lin_vel1 < -kLIMIT_X_MAX_VELOCITY)
+    {
+      lin_vel1 = -kLIMIT_X_MAX_VELOCITY;
+    }
 
-  lin_vel2 = wheel_speed_cmd[RIGHT] * kT3_VELOCITY_CONSTANT_VALUE;
-  if (lin_vel2 > kLIMIT_X_MAX_VELOCITY)
-  {
-    lin_vel2 =  kLIMIT_X_MAX_VELOCITY;
-  }
-  else if (lin_vel2 < -kLIMIT_X_MAX_VELOCITY)
-  {
-    lin_vel2 = -kLIMIT_X_MAX_VELOCITY;
-  }
+    lin_vel2 = wheel_speed_cmd[RIGHT] * kT3_VELOCITY_CONSTANT_VALUE;
+    if (lin_vel2 > kLIMIT_X_MAX_VELOCITY)
+    {
+      lin_vel2 =  kLIMIT_X_MAX_VELOCITY;
+    }
+    else if (lin_vel2 < -kLIMIT_X_MAX_VELOCITY)
+    {
+      lin_vel2 = -kLIMIT_X_MAX_VELOCITY;
+    }
+    lin_Value[0] = (int32_t)lin_vel1;
+    lin_Value[1] = (int32_t)lin_vel2;
 // dxl_comm_result = motor_driver.speedControl(100, 100, left_present_RPM, right_present_RPM);
 //    Serial.print("lin_vel1:");
 //    Serial.println(lin_vel1);
 //
 //    Serial.print("lin_vel2:");
 //    Serial.println(lin_vel2);
-  dxl_comm_result = motor_driver.speedControl((int32_t)lin_vel1, (int32_t)lin_vel2, left_present_RPM, right_present_RPM);
+
+    dxl_comm_result = motor_driver.speedControl((int32_t)lin_vel1, (int32_t)lin_vel2, left_present_RPM, right_present_RPM, dacValue);
+//  dxl_comm_result = motor_driver.speedControl((int32_t)lin_vel1, (int32_t)lin_vel2, left_present_RPM, right_present_RPM);
 // dxl_comm_result = motor_driver.speedControl((int32_t)lin_vel2, 0, left_present_RPM, right_present_RPM);
-  if (dxl_comm_result == false)
-    return;
+    if (dxl_comm_result == false)
+    {
+      return;
+    }
+  }
+  else
+  {
+//    dxl_comm_result = motor_driver.speedControl(0, 0, left_present_RPM, right_present_RPM);
+    dxl_comm_result = motor_driver.speedControl(0, 0, left_present_RPM, right_present_RPM, dacValue);
+    if (dxl_comm_result == false)
+    {
+      return;
+    }
+  }
 }
 
 /*******************************************************************************

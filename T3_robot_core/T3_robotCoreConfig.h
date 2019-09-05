@@ -107,8 +107,11 @@ void updateJoint(void);
 void updateTF(geometry_msgs::TransformStamped& odom_tf);
 void receiveRemoteControlData(void);
 //void controlMotorSpeed(void);
-
-void controlMotorSpeed(int32_t left_present_RPM, int32_t right_present_RPM);
+bool getSensorData(void);
+//void getSensorData(void);
+//void controlMotorSpeed(int32_t left_present_RPM, int32_t right_present_RPM);
+//void controlMotorSpeed(bool onOff, int32_t left_present_RPM, int32_t right_present_RPM);
+void controlMotorSpeed(bool onOff, int32_t left_present_RPM, int32_t right_present_RPM, int32_t *lin_Value);
 uint8_t getButtonPress(void);
 void testDrive(void);
 void checkPushButtonState(void);
